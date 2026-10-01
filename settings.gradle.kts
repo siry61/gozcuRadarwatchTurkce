@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "RadarWatch"
+rootProject.name = "Gozcu"
 include(":app")
