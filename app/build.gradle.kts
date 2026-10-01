@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.radarwatch.app"
+    namespace = "com.gozcu.app"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.radarwatch.app"
+        applicationId = "com.gozcu.app"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
