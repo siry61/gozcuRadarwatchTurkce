@@ -68,7 +68,10 @@ class MainActivity : Activity() {
         }
         tarayici?.stopScan(tarama)
         tarayici = adaptor.bluetoothLeScanner
-        tarayici?.startScan(tarama)
+                val ayar = ScanSettings.Builder()
+            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+            .build()
+        tarayici?.startScan(null, ayar, tarama)
         ekran.text = "Tarama başladı, cihaz bekleniyor..."
     }
 
