@@ -31,17 +31,30 @@ class MainActivity : Activity() {
             ekran.text = "Görülen cihaz: ${gorulenler.size}\n\n" +
                 gorulenler.values.joinToString("\n\n")
         }
+
+        override fun onScanFailed(errorCode: Int) {
+            ekran.text = "Tarama başlamadı, hata kodu: $errorCode"
+        }
     }
 
     private fun gerekenIzinler(): Array<String> =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.ACCESS_FINE_LOCATION)
+            arrayOf(
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
         } else {
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
         }
 
-    private fun izinVarMi(): Boolean =
-        gerekenIzinler().all { checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED }
+    private fun eksikIzinler(): List<String> =
+        gerekenIzinler().filter {
+            checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED
+        }
 
     private fun taramayiBaslat() {
         val adaptor = getSystemService(BluetoothManager::class.java).adapter
@@ -49,8 +62,20 @@ class MainActivity : Activity() {
             ekran.text = "Bluetooth kapalı, açıp tekrar gir"
             return
         }
+        tarayici?.stopScan(tarama)
         tarayici = adaptor.bluetoothLeScanner
         tarayici?.startScan(tarama)
+        ekran.text = "Tarama başladı, cihaz bekleniyor..."
+    }
+
+    private fun durumuGuncelle() {
+        val eksik = eksikIzinler()
+        if (eksik.isEmpty()) {
+            taramayiBaslat()
+        } else {
+            ekran.text = "Eksik izin:\n" +
+                eksik.joinToString("\n") { it.substringAfterLast('.') }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,18 +89,23 @@ class MainActivity : Activity() {
         kaydirma.addView(ekran)
         setContentView(kaydirma)
 
-        if (!izinVarMi()) {
+        if (eksikIzinler().isNotEmpty()) {
             requestPermissions(gerekenIzinler(), 1)
         }
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        durumuGuncelle()
+    }
+
     override fun onResume() {
         super.onResume()
-        if (izinVarMi()) {
-            taramayiBaslat()
-        } else {
-            ekran.text = "Tarama için izin gerekli"
-        }
+        durumuGuncelle()
     }
 
     override fun onPause() {
