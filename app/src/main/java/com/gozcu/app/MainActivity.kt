@@ -1,5 +1,6 @@
 package com.gozcu.app
 
+import android.bluetooth.le.ScanSettings
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
