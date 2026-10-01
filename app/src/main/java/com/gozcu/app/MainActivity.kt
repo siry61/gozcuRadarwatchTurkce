@@ -24,10 +24,13 @@ class MainActivity : Activity() {
     private val tarama = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, sonuc: ScanResult) {
             val adres = sonuc.device.address
-            val ham = sonuc.scanRecord?.bytes
-                ?.joinToString(" ") { "%02X".format(it) } ?: "-"
+            val kayit = sonuc.scanRecord?.bytes
+            val ayrik = if (kayit == null) "-" else
+                reklamiAyir(kayit).joinToString("\n") { (tip, veri) ->
+                    "  ${tipAdi(tip)}: " + veri.joinToString(" ") { "%02X".format(it) }
+                }
 
-            gorulenler[adres] = "$adres  ${sonuc.rssi} dBm\n$ham"
+            gorulenler[adres] = "$adres  ${sonuc.rssi} dBm\n$ayrik"
 
             ekran.text = "Görülen cihaz: ${gorulenler.size}\n\n" +
                 gorulenler.values.joinToString("\n\n")
